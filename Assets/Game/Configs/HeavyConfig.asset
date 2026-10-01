@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HeavyConfig
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponConfig
   _displayName: Heavy Gun
-  _projectilePrefab: {fileID: 3707963568673088205, guid: 5db000f3c0dab8d46bf61fe7880f13d3, type: 3}
+  _projectilePrefab: {fileID: 6894593869563585206, guid: 5db000f3c0dab8d46bf61fe7880f13d3, type: 3}
   _projectileScale: 2.8
   _projectileSpeed: 18
   _tint: {r: 0.75, g: 0.2, b: 0.85, a: 1}

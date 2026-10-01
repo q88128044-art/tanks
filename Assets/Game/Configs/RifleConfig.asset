@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RifleConfig
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponConfig
   _displayName: Rifle
-  _projectilePrefab: {fileID: 3195835078434710043, guid: 3d073b724b32b6f42ba26a151533ab2e, type: 3}
+  _projectilePrefab: {fileID: 2137147793957465400, guid: 3d073b724b32b6f42ba26a151533ab2e, type: 3}
   _projectileScale: 1
   _projectileSpeed: 32
   _tint: {r: 0.95, g: 0.85, b: 0.25, a: 1}

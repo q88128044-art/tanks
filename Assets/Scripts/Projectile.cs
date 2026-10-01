@@ -48,9 +48,9 @@ namespace Tanks
 
         private void Awake()
         {
-            _collider = GetComponent<Collider>();
-
             Collider[] colliders = GetComponents<Collider>();
+            _collider = colliders.Length > 0 ? colliders[0] : gameObject.AddComponent<SphereCollider>();
+
             for (int i = 1; i < colliders.Length; i++)
             {
                 Destroy(colliders[i]);
@@ -58,7 +58,12 @@ namespace Tanks
 
             _collider.isTrigger = true;
 
-            Rigidbody body = gameObject.AddComponent<Rigidbody>();
+            Rigidbody body = GetComponent<Rigidbody>();
+            if (body == null)
+            {
+                body = gameObject.AddComponent<Rigidbody>();
+            }
+
             body.isKinematic = true;
             body.useGravity = false;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;

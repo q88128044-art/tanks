@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CannonConfig
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponConfig
   _displayName: Cannon
-  _projectilePrefab: {fileID: 2787466910705322907, guid: 21d94e27778d0ce43ac8552611105d34, type: 3}
+  _projectilePrefab: {fileID: 8490712883157697079, guid: 21d94e27778d0ce43ac8552611105d34, type: 3}
   _projectileScale: 1.8
   _projectileSpeed: 22
   _tint: {r: 0.9, g: 0.45, b: 0.15, a: 1}
