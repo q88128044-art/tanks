@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2339e216afbf8534d9ab32f1f4b8c528, type: 3}
+  m_Name: RifleConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponConfig
+  _displayName: Rifle
+  _projectilePrefab: {fileID: 3195835078434710043, guid: 3d073b724b32b6f42ba26a151533ab2e, type: 3}
+  _projectileScale: 1
+  _projectileSpeed: 32
+  _tint: {r: 0.95, g: 0.85, b: 0.25, a: 1}
+  _damage: 10
+  _cooldown: 0.35
+  _projectileLifetime: 2.5
+  _maxActiveProjectiles: 0

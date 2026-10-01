@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2339e216afbf8534d9ab32f1f4b8c528, type: 3}
+  m_Name: HeavyConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponConfig
+  _displayName: Heavy Gun
+  _projectilePrefab: {fileID: 3707963568673088205, guid: 5db000f3c0dab8d46bf61fe7880f13d3, type: 3}
+  _projectileScale: 2.8
+  _projectileSpeed: 18
+  _tint: {r: 0.75, g: 0.2, b: 0.85, a: 1}
+  _damage: 65
+  _cooldown: 1.8
+  _projectileLifetime: 5
+  _maxActiveProjectiles: 3

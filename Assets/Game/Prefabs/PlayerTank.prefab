@@ -106,6 +106,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3293052823729633131}
   - component: {fileID: 4022607665576835577}
+  - component: {fileID: 6772072419118049370}
   m_Layer: 0
   m_Name: Turret
   m_TagString: Untagged
@@ -147,6 +148,24 @@ MonoBehaviour:
   _camera: {fileID: 0}
   _aimHeight: 0.6
   _turnSpeed: 12
+--- !u!114 &6772072419118049370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915330801019260518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6f70cb93b4433846a20dad32697c58a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.WeaponController
+  _weapons:
+  - {fileID: 11400000, guid: cb1c8b1aa6b881146897f30f5514322c, type: 2}
+  - {fileID: 11400000, guid: 5903eb7a4deabd049b8f2b4cfeebda88, type: 2}
+  - {fileID: 11400000, guid: 6574061d733ec2a41b72fc12e09d1af3, type: 2}
+  _muzzle: {fileID: 4747099031471712556}
+  _startIndex: 0
 --- !u!1 &3163571994039862103
 GameObject:
   m_ObjectHideFlags: 0
