@@ -49,6 +49,19 @@ namespace Tanks
         private void Awake()
         {
             _collider = GetComponent<Collider>();
+
+            Collider[] colliders = GetComponents<Collider>();
+            for (int i = 1; i < colliders.Length; i++)
+            {
+                Destroy(colliders[i]);
+            }
+
+            _collider.isTrigger = true;
+
+            Rigidbody body = gameObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         }
 
         private void Update()

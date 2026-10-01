@@ -194,14 +194,25 @@ namespace Tanks.EditorTools
             GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (existing != null)
             {
-                return existing;
+                AssetDatabase.DeleteAsset(path);
             }
 
             GameObject projectile = GameObject.CreatePrimitive(shape);
             projectile.name = "Projectile";
 
-            SphereCollider sphere = projectile.AddComponent<SphereCollider>();
-            sphere.isTrigger = true;
+            Collider primitiveCollider = projectile.GetComponent<Collider>();
+            primitiveCollider.isTrigger = true;
+
+            int projectileLayer = LayerMask.NameToLayer("Projectile");
+            if (projectileLayer >= 0)
+            {
+                projectile.layer = projectileLayer;
+            }
+
+            Rigidbody body = projectile.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
             projectile.AddComponent<Projectile>();
 
@@ -275,7 +286,11 @@ namespace Tanks.EditorTools
         private static GameObject BuildTankPrefab(Material hull, Material track, Material barrel)
         {
             GameObject root = new GameObject("PlayerTank");
-            root.layer = LayerMask.NameToLayer("Player");
+            int playerLayer = LayerMask.NameToLayer("Player");
+            if (playerLayer >= 0)
+            {
+                root.layer = playerLayer;
+            }
 
             Rigidbody body = root.AddComponent<Rigidbody>();
             body.mass = 8f;
