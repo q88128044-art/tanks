@@ -62,7 +62,10 @@ namespace Tanks
 
         private void OnEnable()
         {
-            _agent.stoppingDistance = _attackRange;
+            if (_agent.isOnNavMesh)
+            {
+                _agent.stoppingDistance = _attackRange;
+            }
         }
 
         private void Update()
@@ -92,7 +95,7 @@ namespace Tanks
                 return;
             }
 
-            if (_agent.remainingDistance <= _agent.stoppingDistance)
+            if (_agent.isOnNavMesh && _agent.remainingDistance <= _agent.stoppingDistance)
             {
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
             }
@@ -134,7 +137,8 @@ namespace Tanks
             if (_loseTargetTimer > 0f)
                 _loseTargetTimer -= Time.deltaTime;
 
-            _agent.isStopped = true;
+            if (_agent.isOnNavMesh)
+                _agent.isStopped = true;
 
             if (_turret != null && _player != null)
             {
@@ -192,16 +196,16 @@ namespace Tanks
 
             if (newState == AIState.Patrol)
             {
-                _agent.isStopped = false;
+                if (_agent.isOnNavMesh) _agent.isStopped = false;
                 SetDestination(_waypoints[_currentWaypointIndex].position);
             }
             else if (newState == AIState.Chase)
             {
-                _agent.isStopped = false;
+                if (_agent.isOnNavMesh) _agent.isStopped = false;
             }
             else if (newState == AIState.Attack)
             {
-                _agent.isStopped = true;
+                if (_agent.isOnNavMesh) _agent.isStopped = true;
             }
 
             Debug.Log(gameObject.name + " AI state: " + newState);
