@@ -7,10 +7,12 @@ namespace Tanks
     {
         [SerializeField] private WeaponConfig[] _weapons;
         [SerializeField] private Transform _muzzle;
+        [SerializeField] private Camera _camera;
         [SerializeField] private int _startIndex;
 
         private int _selected;
         private float _nextFireTime;
+        private float _recoilOffset;
 
         public WeaponConfig Current => _weapons[_selected];
 
@@ -26,10 +28,17 @@ namespace Tanks
             {
                 _muzzle = transform;
             }
+
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+            }
         }
 
         private void Update()
         {
+            UpdateCameraRecoil();
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null)
             {
@@ -61,6 +70,30 @@ namespace Tanks
             if (firePressed)
             {
                 Fire();
+            }
+        }
+
+        private void UpdateCameraRecoil()
+        {
+            if (_camera == null)
+            {
+                return;
+            }
+
+            if (_recoilOffset > 0.01f)
+            {
+                float spring = Mathf.Clamp01(_recoilOffset * 10f * Time.deltaTime);
+                _recoilOffset -= spring;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (_camera != null && _recoilOffset > 0.01f)
+            {
+                Vector3 pos = _camera.transform.localPosition;
+                pos.z = Mathf.Lerp(pos.z, -_recoilOffset * 0.05f, Time.deltaTime * 20f);
+                _camera.transform.localPosition = pos;
             }
         }
 
@@ -97,12 +130,38 @@ namespace Tanks
 
             _nextFireTime = Time.time + config.Cooldown;
 
+            PlayMuzzleFlash(config);
+            PlayCameraRecoil(config);
+
             GameObject instance = Instantiate(config.ProjectilePrefab, _muzzle.position, _muzzle.rotation);
             Projectile projectile = instance.GetComponent<Projectile>();
             if (projectile != null)
             {
                 projectile.Launch(config, transform.root, _muzzle.forward);
             }
+
+            if (config.IsHeavy && VFXSystem.Instance != null && AudioSystem.Instance != null)
+            {
+                Vector3 explosionPos = _muzzle.position + _muzzle.forward * 5f;
+                VFXSystem.Instance.PlayExplosion(explosionPos, config.ExplosionSize, config.ExplosionDuration, config.Tint);
+                AudioSystem.Instance.PlayExplosion(explosionPos, config.ExplosionVolume, 1f);
+            }
+        }
+
+        private void PlayMuzzleFlash(WeaponConfig config)
+        {
+            if (VFXSystem.Instance == null)
+            {
+                return;
+            }
+
+            VFXSystem.Instance.PlayMuzzleFlash(_muzzle.position, _muzzle.rotation,
+                config.MuzzleFlashSize, config.MuzzleFlashDuration, config.MuzzleFlashColor);
+        }
+
+        private void PlayCameraRecoil(WeaponConfig config)
+        {
+            _recoilOffset = config.CameraRecoil;
         }
     }
 }

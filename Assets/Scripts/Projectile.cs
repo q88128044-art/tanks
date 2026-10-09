@@ -14,10 +14,13 @@ namespace Tanks
 
         private Collider _collider;
         private Transform _owner;
+        private Rigidbody _rigidbody;
+        private WeaponConfig _config;
         private float _dieAt;
 
         public float Damage => _damage;
         public Transform Owner => _owner;
+        public float Speed => _rigidbody != null ? _rigidbody.linearVelocity.magnitude : 0f;
 
         public static int CountActiveFor(Transform owner)
         {
@@ -32,6 +35,7 @@ namespace Tanks
             _lifetime = config.ProjectileLifetime;
             _damage = config.Damage;
             _owner = owner;
+            _config = config;
 
             transform.localScale = Vector3.one * config.ProjectileScale;
             transform.SetPositionAndRotation(transform.position, Quaternion.LookRotation(direction.normalized, Vector3.up));
@@ -40,6 +44,16 @@ namespace Tanks
             foreach (Renderer item in renderers)
             {
                 item.material.color = config.Tint;
+            }
+
+            TrailRenderer trail = GetComponent<TrailRenderer>();
+            if (trail != null)
+            {
+                trail.time = config.TrailDuration;
+                trail.startColor = config.Tint;
+                trail.endColor = new Color(config.Tint.r, config.Tint.g, config.Tint.b, 0f);
+                trail.startWidth = config.ProjectileScale * 0.3f;
+                trail.endWidth = 0f;
             }
 
             IgnoreOwnerColliders(owner);
@@ -64,6 +78,7 @@ namespace Tanks
                 body = gameObject.AddComponent<Rigidbody>();
             }
 
+            _rigidbody = body;
             body.isKinematic = true;
             body.useGravity = false;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
@@ -92,7 +107,40 @@ namespace Tanks
                 target.ApplyDamage(_damage);
             }
 
+            PlayImpactVFX(other);
+
             Expire();
+        }
+
+        private void PlayImpactVFX(Collider other)
+        {
+            Vector3 hitPoint = transform.position;
+            Quaternion hitRotation = transform.rotation;
+            Color tint = _config != null ? _config.Tint : Color.white;
+            float randomPitch = Random.Range(0.95f, 1.05f);
+
+            ImpactSurface surface = other.GetComponent<ImpactSurface>();
+            if (surface == null)
+            {
+                surface = other.GetComponentInParent<ImpactSurface>();
+            }
+
+            if (VFXSystem.Instance != null)
+            {
+                VFXSystem.Instance.PlayImpact(hitPoint, hitRotation,
+                    _config != null ? _config.ImpactSize : 0.3f,
+                    _config != null ? _config.ImpactDuration : 0.15f,
+                    tint);
+            }
+
+            if (AudioSystem.Instance != null && _config != null)
+            {
+                AudioSystem.Instance.PlayImpact(hitPoint,
+                    _config.ImpactBaseFrequency,
+                    _config.ImpactDuration,
+                    _config.ImpactVolume,
+                    randomPitch);
+            }
         }
 
         private void IgnoreOwnerColliders(Transform owner)

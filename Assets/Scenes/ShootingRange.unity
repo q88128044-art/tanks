@@ -231,6 +231,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 21492420}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &104993623
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 104993625}
+  - component: {fileID: 104993624}
+  m_Layer: 0
+  m_Name: VFXSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &104993624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104993623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80d5e531d3168424dbe0a77a0ce68bc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.VFXSystem
+  _poolSize: 16
+--- !u!4 &104993625
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104993623}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &108091625
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,6 +286,7 @@ GameObject:
   m_Component:
   - component: {fileID: 108091626}
   - component: {fileID: 108091627}
+  - component: {fileID: 108091628}
   m_Layer: 0
   m_Name: Target4
   m_TagString: Untagged
@@ -277,10 +323,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 80
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 228197901}
+--- !u!114 &108091628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108091625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &108337977
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,6 +576,7 @@ GameObject:
   m_Component:
   - component: {fileID: 176176927}
   - component: {fileID: 176176928}
+  - component: {fileID: 176176929}
   m_Layer: 0
   m_Name: Target5
   m_TagString: Untagged
@@ -552,10 +613,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 120
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 1973407728}
+--- !u!114 &176176929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 176176926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &185567449
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,6 +1698,7 @@ GameObject:
   m_Component:
   - component: {fileID: 823152240}
   - component: {fileID: 823152241}
+  - component: {fileID: 823152242}
   m_Layer: 0
   m_Name: Target3
   m_TagString: Untagged
@@ -1659,10 +1735,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 140
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 1818732472}
+--- !u!114 &823152242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 823152239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &831170638
 GameObject:
   m_ObjectHideFlags: 0
@@ -1899,6 +1989,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerTank
       objectReference: {fileID: 0}
+    - target: {fileID: 4022607665576835577, guid: a48b0fb2ded81474d9fbb0068e268885, type: 3}
+      propertyPath: _camera
+      value: 
+      objectReference: {fileID: 1725184441}
     - target: {fileID: 5659306248551786699, guid: a48b0fb2ded81474d9fbb0068e268885, type: 3}
       propertyPath: _statusLabel
       value: 
@@ -1946,8 +2040,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1348021605376100409, guid: a48b0fb2ded81474d9fbb0068e268885, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 914502625}
   m_SourcePrefab: {fileID: 100100000, guid: a48b0fb2ded81474d9fbb0068e268885, type: 3}
+--- !u!1 &914502624 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1348021605376100409, guid: a48b0fb2ded81474d9fbb0068e268885, type: 3}
+  m_PrefabInstance: {fileID: 914502623}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &914502625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 914502624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81ed4a813aaffd343a9cd01bdce53d01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.EngineLoop
+  _idleVolume: 0.25
+  _fullVolume: 0.85
+  _revVolume: 0.55
+  _idlePitch: 0.8
+  _revPitch: 1.05
+  _idleFrequency: 0.35
+  _revFrequency: 0.5
+  _idleExhaust: 0.15
+  _fullExhaust: 0.9
+  _revExhaust: 0.6
 --- !u!1 &1026223796
 GameObject:
   m_ObjectHideFlags: 0
@@ -2622,6 +2746,52 @@ Transform:
   - {fileID: 831170639}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1490264363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1490264365}
+  - component: {fileID: 1490264364}
+  m_Layer: 0
+  m_Name: AudioSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1490264364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490264363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48c8261ba5e31934f9b8d198b9555647, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.AudioSystem
+  _poolSize: 12
+  _masterVolume: 0.9
+--- !u!4 &1490264365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490264363}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1555875841
 GameObject:
   m_ObjectHideFlags: 0
@@ -2744,6 +2914,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1652449023}
   - component: {fileID: 1652449024}
+  - component: {fileID: 1652449025}
   m_Layer: 0
   m_Name: Target1
   m_TagString: Untagged
@@ -2780,10 +2951,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 60
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 799227947}
+--- !u!114 &1652449025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652449022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &1658390516
 GameObject:
   m_ObjectHideFlags: 0
@@ -3334,6 +3519,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1869424852}
   - component: {fileID: 1869424853}
+  - component: {fileID: 1869424854}
   m_Layer: 0
   m_Name: Target6
   m_TagString: Untagged
@@ -3370,10 +3556,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 100
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 1213654735}
+--- !u!114 &1869424854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869424851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &1973407726
 GameObject:
   m_ObjectHideFlags: 0
@@ -3623,6 +3823,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1992692465}
   - component: {fileID: 1992692466}
+  - component: {fileID: 1992692467}
   m_Layer: 0
   m_Name: Target2
   m_TagString: Untagged
@@ -3659,10 +3860,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a266ab5374da749b0b63273e410a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.Target
+  _surface: 1
   _maxHealth: 100
   _hitColor: {r: 0.85, g: 0.15, b: 0.12, a: 1}
   _renderers:
   - {fileID: 659381178}
+--- !u!114 &1992692467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992692464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3291e4bf06e24cb489d3e87d13bf67c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.ImpactSurface
+  _surface: 1
 --- !u!1 &2011725529
 GameObject:
   m_ObjectHideFlags: 0
@@ -3787,3 +4002,5 @@ SceneRoots:
   - {fileID: 1725184442}
   - {fileID: 619282902}
   - {fileID: 185567450}
+  - {fileID: 104993625}
+  - {fileID: 1490264365}

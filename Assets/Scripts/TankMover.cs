@@ -23,6 +23,7 @@ namespace Tanks
         public float MoveSpeed => _moveSpeed;
         public float ReverseSpeed => _moveSpeed * _reverseSpeedFactor;
         public float TurnSpeed => _turnSpeed;
+        public float CurrentSpeed => _rigidbody != null ? _rigidbody.linearVelocity.magnitude : 0f;
 
         public event System.Action<bool> MovementChanged;
 

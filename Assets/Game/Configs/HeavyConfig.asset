@@ -21,3 +21,16 @@ MonoBehaviour:
   _cooldown: 1.8
   _projectileLifetime: 5
   _maxActiveProjectiles: 3
+  _muzzleFlashSize: 1
+  _muzzleFlashDuration: 0.2
+  _muzzleFlashColor: {r: 1, g: 0.4, b: 0.1, a: 1}
+  _trailDuration: 0.4
+  _impactSize: 0.6
+  _impactDuration: 0.25
+  _impactBaseFrequency: 200
+  _impactVolume: 0.9
+  _isHeavy: 1
+  _explosionSize: 2
+  _explosionDuration: 0.4
+  _explosionVolume: 0.9
+  _cameraRecoil: 8
