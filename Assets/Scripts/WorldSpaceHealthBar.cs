@@ -139,7 +139,7 @@ namespace Tanks
             bg.transform.localPosition = new Vector3(0f, 0f, 0f);
             bg.transform.localScale = new Vector3(_width, _height, 1f);
             bg.GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.7f);
-            Object.Destroy(bg.GetComponent<Collider>());
+            Object.DestroyImmediate(bg.GetComponent<Collider>());
 
             GameObject fill = GameObject.CreatePrimitive(PrimitiveType.Quad);
             fill.name = "Fill";
@@ -147,7 +147,7 @@ namespace Tanks
             fill.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             fill.transform.localScale = new Vector3(_width, _height, 1f);
             fill.GetComponent<Renderer>().material.color = _fullColor;
-            Object.Destroy(fill.GetComponent<Collider>());
+            Object.DestroyImmediate(fill.GetComponent<Collider>());
 
             _fill = fill.GetComponent<Renderer>();
 

@@ -990,19 +990,15 @@ namespace Tanks.EditorTools
             v.rounded.Override(false);
         }
 
-        private static void BuildNavMesh()
+private static void BuildNavMesh()
         {
-            GameObject navObject = new GameObject("NavMeshSurface");
-            NavMeshSurface surface = navObject.AddComponent<NavMeshSurface>();
-            surface.agentTypeID = 0;
-            surface.collectObjects = CollectObjects.All;
-
-            // Bake level geometry only. The tanks live on the Player/Enemy layers,
-            // so excluding them keeps the surface at ground level instead of
-            // building walkable polygons on top of the vehicles.
-            surface.layerMask = LevelNavigationMask;
-
-            surface.BuildNavMesh();
+            // Legacy NavMesh (Unity.AI) — the NavMeshAgent on EnemyTank uses
+            // this API. Only NavigationStatic geometry contributes; the tanks
+            // live on the Player/Enemy layers and are excluded so the surface
+            // stays at ground level instead of being built on top of them.
+            NavMeshSettings settings = NavMeshAgentSettings.LoadFromSettings(NavMeshAgentSettings.defaultAgentTypeID);
+            NavMeshData data = UnityEngine.AI.NavMesh.Bake(settings, new Vector3(200f, 20f, 200f));
+            UnityEngine.AI.NavMesh.AddNavMeshData(data);
         }
 
         private static GameObject CreateInstance(GameObject prefab, Vector3 position, Quaternion rotation, string name)

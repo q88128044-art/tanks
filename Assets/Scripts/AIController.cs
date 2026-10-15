@@ -98,16 +98,18 @@ namespace Tanks
             }
         }
 
-        private void Update()
+private void Update()
         {
             if (_agent == null || !_agent.isOnNavMesh)
             {
-                // Agent not ready, try to initialize
-                if (_agent != null && !_agent.isOnNavMesh && _agent.isActiveAndEnabled)
+                // Agent not ready — warp it onto the navmesh so isOnNavMesh
+                // becomes true. Moving the transform alone does not set the
+                // agent's internal on-navmesh state.
+                if (_agent != null && _agent.isActiveAndEnabled)
                 {
-                    if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out var hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+                    if ( UnityEngine.AI.NavMesh.SamplePosition(transform.position, out var hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
                     {
-                        transform.position = new UnityEngine.Vector3(hit.position.x, hit.position.y + 0.41f, hit.position.z);
+                        _agent.Warp(hit.position);
                     }
                 }
                 return;
