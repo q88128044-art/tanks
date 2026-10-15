@@ -12,8 +12,9 @@ namespace Tanks
         [SerializeField] private float _lifetime = 3f;
         [SerializeField] private float _damage = 10f;
 
-        private Collider _collider;
+        private bool _hasHit;
         private Transform _owner;
+        private Collider _collider;
         private Rigidbody _rigidbody;
         private WeaponConfig _config;
         private float _dieAt;
@@ -96,15 +97,26 @@ namespace Tanks
 
         private void OnTriggerEnter(Collider other)
         {
-            if (_owner != null && other.transform.IsChildOf(_owner))
+            Debug.Log($"[Projectile] {name} triggered by {other.name} owner={( _owner == null ? "null" : _owner.name )}");
+
+            // A trigger sphere can report the Hull and the TurretBody of the same
+            // tank in one frame; without this guard the hit is applied twice.
+            if (_hasHit)
             {
                 return;
             }
 
-            Target target = other.GetComponentInParent<Target>();
-            if (target != null)
+            if (_owner != null && other.transform.IsChildOf(_owner))
             {
-                target.ApplyDamage(_damage);
+                Debug.Log($"[Projectile] {name} ignored own collider {other.name}");
+                return;
+            }
+
+            IDamageable damageable = other.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(_damage, transform);
+                _hasHit = true;
             }
 
             PlayImpactVFX(other);
@@ -118,12 +130,6 @@ namespace Tanks
             Quaternion hitRotation = transform.rotation;
             Color tint = _config != null ? _config.Tint : Color.white;
             float randomPitch = Random.Range(0.95f, 1.05f);
-
-            ImpactSurface surface = other.GetComponent<ImpactSurface>();
-            if (surface == null)
-            {
-                surface = other.GetComponentInParent<ImpactSurface>();
-            }
 
             if (VFXSystem.Instance != null)
             {
@@ -196,6 +202,21 @@ namespace Tanks
 
         private void Expire()
         {
+            // Destruction explosion on impact (heavy weapons / cannon already explode in WeaponController,
+            // but every projectile leaves a small spark burst for readability).
+            if (_config != null && _config.IsHeavy)
+            {
+                if (VFXSystem.Instance != null)
+                {
+                    VFXSystem.Instance.PlayExplosion(transform.position, _config.ExplosionSize * 0.5f,
+                        _config.ExplosionDuration * 0.6f, _config.Tint);
+                }
+                if (AudioSystem.Instance != null)
+                {
+                    AudioSystem.Instance.PlayExplosion(transform.position, _config.ExplosionVolume * 0.5f, 1f);
+                }
+            }
+
             Destroy(gameObject);
         }
     }

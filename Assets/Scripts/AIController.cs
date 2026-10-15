@@ -51,6 +51,11 @@ namespace Tanks
             if (_model == null)
                 _model = transform;
 
+            if (_waypoints == null || _waypoints.Length == 0)
+            {
+                _waypoints = FindWaypointsInScene();
+            }
+
             if (_player == null)
             {
                 GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -58,6 +63,31 @@ namespace Tanks
                     playerObj = GameObject.Find("PlayerTank");
                 _player = playerObj?.transform;
             }
+        }
+
+        /// <summary>
+        /// Fallback: pick up the AI patrol route placed in the scene by ArenaBuilder.
+        /// </summary>
+        private Transform[] FindWaypointsInScene()
+        {
+            Transform routeRoot = transform.root.Find("AI_Route");
+            if (routeRoot == null)
+            {
+                routeRoot = GameObject.Find("AI_Route")?.transform;
+            }
+
+            if (routeRoot == null)
+            {
+                return new Transform[0];
+            }
+
+            Transform[] found = new Transform[routeRoot.childCount];
+            for (int i = 0; i < routeRoot.childCount; i++)
+            {
+                found[i] = routeRoot.GetChild(i);
+            }
+
+            return found;
         }
 
         private void OnEnable()
@@ -87,7 +117,11 @@ namespace Tanks
         private void UpdatePatrol()
         {
             if (_waypoints == null || _waypoints.Length == 0)
+            {
+                Debug.LogWarning(gameObject.name + ": no waypoints assigned, falling back to Chase.");
+                SwitchState(AIState.Chase);
                 return;
+            }
 
             if (CanSeePlayer())
             {
@@ -197,7 +231,12 @@ namespace Tanks
             if (newState == AIState.Patrol)
             {
                 if (_agent.isOnNavMesh) _agent.isStopped = false;
-                SetDestination(_waypoints[_currentWaypointIndex].position);
+                if (_waypoints != null && _waypoints.Length > 0
+                    && _currentWaypointIndex >= 0 && _currentWaypointIndex < _waypoints.Length
+                    && _waypoints[_currentWaypointIndex] != null)
+                {
+                    SetDestination(_waypoints[_currentWaypointIndex].position);
+                }
             }
             else if (newState == AIState.Chase)
             {

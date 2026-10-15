@@ -9,6 +9,7 @@ namespace Tanks
         [SerializeField] private Transform _muzzle;
         [SerializeField] private Camera _camera;
         [SerializeField] private int _startIndex;
+        [SerializeField] private bool _isAIWeapon;
 
         private int _selected;
         private float _nextFireTime;
@@ -19,6 +20,8 @@ namespace Tanks
         public int SelectedIndex => _selected;
 
         public float CooldownRemaining => Mathf.Max(0f, _nextFireTime - Time.time);
+
+        public bool IsAIWeapon => _isAIWeapon;
 
         private void Awake()
         {
@@ -38,6 +41,11 @@ namespace Tanks
         private void Update()
         {
             UpdateCameraRecoil();
+
+            if (_isAIWeapon)
+            {
+                return;
+            }
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null)
