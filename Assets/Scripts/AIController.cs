@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -92,7 +92,7 @@ namespace Tanks
 
         private void OnEnable()
         {
-            if (_agent.isOnNavMesh)
+            if (_agent != null && _agent.isOnNavMesh)
             {
                 _agent.stoppingDistance = _attackRange;
             }
@@ -100,6 +100,19 @@ namespace Tanks
 
         private void Update()
         {
+            if (_agent == null || !_agent.isOnNavMesh)
+            {
+                // Agent not ready, try to initialize
+                if (_agent != null && !_agent.isOnNavMesh && _agent.isActiveAndEnabled)
+                {
+                    if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out var hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+                    {
+                        transform.position = new UnityEngine.Vector3(hit.position.x, hit.position.y + 0.41f, hit.position.z);
+                    }
+                }
+                return;
+            }
+
             switch (_currentState)
             {
                 case AIState.Patrol:
@@ -129,7 +142,7 @@ namespace Tanks
                 return;
             }
 
-            if (_agent.isOnNavMesh && _agent.remainingDistance <= _agent.stoppingDistance)
+            if (_agent != null && _agent.isOnNavMesh && _agent.remainingDistance <= _agent.stoppingDistance)
             {
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
             }
@@ -230,7 +243,7 @@ namespace Tanks
 
             if (newState == AIState.Patrol)
             {
-                if (_agent.isOnNavMesh) _agent.isStopped = false;
+                if (_agent != null && _agent.isOnNavMesh) _agent.isStopped = false;
                 if (_waypoints != null && _waypoints.Length > 0
                     && _currentWaypointIndex >= 0 && _currentWaypointIndex < _waypoints.Length
                     && _waypoints[_currentWaypointIndex] != null)
@@ -240,11 +253,11 @@ namespace Tanks
             }
             else if (newState == AIState.Chase)
             {
-                if (_agent.isOnNavMesh) _agent.isStopped = false;
+                if (_agent != null && _agent.isOnNavMesh) _agent.isStopped = false;
             }
             else if (newState == AIState.Attack)
             {
-                if (_agent.isOnNavMesh) _agent.isStopped = true;
+                if (_agent != null && _agent.isOnNavMesh) _agent.isStopped = true;
             }
 
             Debug.Log(gameObject.name + " AI state: " + newState);
