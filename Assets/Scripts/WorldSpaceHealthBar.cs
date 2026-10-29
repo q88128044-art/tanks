@@ -3,45 +3,66 @@ using UnityEngine;
 namespace Tanks
 {
     /// <summary>
-    /// World-space health bar that follows a TankHealth owner and always faces the camera.
-    /// Used by enemies so the player can see their remaining health in-scene.
+    /// Billboard health bar above an enemy tank. Shrinks smoothly, changes
+    /// colour green -> yellow -> red, is hidden while health is full and
+    /// disappears when the tank is destroyed.
     /// </summary>
     [RequireComponent(typeof(TankHealth))]
     public class WorldSpaceHealthBar : MonoBehaviour
     {
-        [Header("References")]
-        [SerializeField] private Transform _barRoot;
-        [SerializeField] private Renderer _fill;
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static Material s_material;
 
         [Header("Layout")]
-        [SerializeField] private float _width = 1.3f;
-        [SerializeField] private float _height = 0.2f;
-        [SerializeField] private float _verticalOffset = 1.7f;
-        [SerializeField] private float _hideWhenFullDelay = 1f;
+        [SerializeField] private float _width = 1.6f;
+        [SerializeField] private float _height = 0.18f;
+        [SerializeField] private float _verticalOffset = 2.1f;
+
+        [Header("Behavior")]
+        [SerializeField] private bool _hideWhenFull = true;
+        [SerializeField] private bool _showOnPlayer = false;
+        [SerializeField] private float _drainSpeed = 0.8f;
 
         [Header("Colors")]
-        [SerializeField] private Color _fullColor = new Color(0.15f, 0.75f, 0.2f);
-        [SerializeField] private Color _lowColor = new Color(0.85f, 0.2f, 0.15f);
-        [SerializeField] private Color _flashColor = new Color(1f, 1f, 1f);
+        [SerializeField] private Color _highColor = new Color(0.2f, 0.8f, 0.25f);
+        [SerializeField] private Color _midColor = new Color(0.95f, 0.8f, 0.15f);
+        [SerializeField] private Color _lowColor = new Color(0.9f, 0.18f, 0.12f);
+        [SerializeField] private Color _backgroundColor = new Color(0.05f, 0.05f, 0.05f);
 
         private TankHealth _health;
         private Camera _camera;
-        private float _lastDamageTime;
-        private bool _isVisible = true;
-        private float _fillAmount = 1f;
+        private Transform _root;
+        private Transform _fillPivot;
+        private Renderer _fillRenderer;
+        private MaterialPropertyBlock _block;
+        private float _target = 1f;
+        private float _displayed = 1f;
+        private bool _visible = true;
 
         private void Awake()
         {
             _health = GetComponent<TankHealth>();
-            _camera = Camera.main;
-            EnsureBar();
+            if (CompareTag("Player") && !_showOnPlayer)
+            {
+                enabled = false;
+                return;
+            }
+
+            _block = new MaterialPropertyBlock();
+            BuildBar();
         }
 
         private void OnEnable()
         {
+            if (_health == null || _root == null)
+            {
+                return;
+            }
+
             _health.HealthChanged += OnHealthChanged;
             _health.Died += OnDied;
-            Refresh(_health.CurrentHealth, _health.MaxHealth);
+            _target = _health.Normalized;
+            _displayed = _target;
         }
 
         private void OnDisable()
@@ -53,46 +74,61 @@ namespace Tanks
             }
         }
 
-        private void Update()
+        private void BuildBar()
         {
-            if (_camera == null)
+            Transform old = transform.Find("HealthBar");
+            if (old != null)
             {
-                _camera = Camera.main;
+                Destroy(old.gameObject);
             }
 
-            if (_camera != null && _barRoot != null)
+            if (s_material == null)
             {
-                Vector3 dir = _barRoot.position - _camera.transform.position;
-                if (dir.sqrMagnitude > 0.0001f)
-                {
-                    _barRoot.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
-                }
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+                s_material = new Material(shader != null ? shader : Shader.Find("Unlit/Color"));
+                s_material.name = "HealthBar (runtime)";
             }
 
-            bool atFull = _health != null && _health.CurrentHealth >= _health.MaxHealth - 0.001f;
-            if (_isVisible && atFull && _fillAmount >= 0.999f && (Time.time - _lastDamageTime) >= _hideWhenFullDelay)
-            {
-                SetVisible(false);
-            }
-            else if (!_isVisible)
-            {
-                SetVisible(true);
-            }
+            _root = new GameObject("HealthBar").transform;
+            _root.SetParent(transform, false);
+            _root.localPosition = Vector3.up * _verticalOffset;
+
+            CreateQuad("Background", _root, new Vector3(0f, 0f, 0.01f), new Vector3(_width + 0.08f, _height + 0.08f, 1f), _backgroundColor);
+
+            _fillPivot = new GameObject("FillPivot").transform;
+            _fillPivot.SetParent(_root, false);
+            _fillPivot.localPosition = new Vector3(-_width * 0.5f, 0f, 0f);
+            _fillRenderer = CreateQuad("Fill", _fillPivot, new Vector3(_width * 0.5f, 0f, 0f), new Vector3(_width, _height, 1f), _highColor);
+        }
+
+        private Renderer CreateQuad(string name, Transform parent, Vector3 position, Vector3 scale, Color color)
+        {
+            GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = name;
+            Destroy(quad.GetComponent<Collider>());
+            quad.transform.SetParent(parent, false);
+            quad.transform.localPosition = position;
+            quad.transform.localScale = scale;
+            quad.layer = 2; // Ignore Raycast
+
+            Renderer r = quad.GetComponent<Renderer>();
+            r.sharedMaterial = s_material;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            SetColor(r, color);
+            return r;
+        }
+
+        private void SetColor(Renderer r, Color color)
+        {
+            r.GetPropertyBlock(_block);
+            _block.SetColor(BaseColorId, color);
+            r.SetPropertyBlock(_block);
         }
 
         private void OnHealthChanged(float current, float max)
         {
-            Refresh(current, max);
-            _lastDamageTime = Time.time;
-
-            if (_fill != null)
-            {
-                _fill.material.color = _flashColor;
-                CancelInvoke(nameof(ResetFlashColor));
-                Invoke(nameof(ResetFlashColor), 0.12f);
-            }
-
-            SetVisible(true);
+            _target = max > 0f ? Mathf.Clamp01(current / max) : 0f;
         }
 
         private void OnDied(TankHealth health)
@@ -100,72 +136,47 @@ namespace Tanks
             SetVisible(false);
         }
 
-        private void Refresh(float current, float max)
+        private void LateUpdate()
         {
-            _fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
-
-            if (_fill != null)
-            {
-                _fill.transform.localScale = new Vector3(_fillAmount, 1f, 1f);
-                _fill.transform.localPosition = new Vector3(-_width * 0.5f + _width * _fillAmount * 0.5f, 0f, 0.02f);
-                _fill.material.color = Color.Lerp(_lowColor, _fullColor, _fillAmount);
-            }
-        }
-
-        private void ResetFlashColor()
-        {
-            if (_fill != null)
-            {
-                _fill.material.color = Color.Lerp(_lowColor, _fullColor, _fillAmount);
-            }
-        }
-
-        private void EnsureBar()
-        {
-            if (_barRoot != null && _fill != null)
+            if (_root == null || _health == null)
             {
                 return;
             }
 
-            GameObject root = new GameObject("HealthBar");
-            root.transform.SetParent(transform, false);
-            root.transform.localPosition = new Vector3(0f, _verticalOffset, 0f);
-            _barRoot = root.transform;
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+            }
 
-            GameObject bg = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            bg.name = "Background";
-            bg.transform.SetParent(root.transform, false);
-            bg.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            bg.transform.localPosition = new Vector3(0f, 0f, 0f);
-            bg.transform.localScale = new Vector3(_width, _height, 1f);
-            bg.GetComponent<Renderer>().material.color = new Color(0f, 0f, 0f, 0.7f);
-            Object.DestroyImmediate(bg.GetComponent<Collider>());
+            _displayed = Mathf.MoveTowards(_displayed, _target, _drainSpeed * Time.deltaTime);
+            _fillPivot.localScale = new Vector3(Mathf.Max(0.0001f, _displayed), 1f, 1f);
+            SetColor(_fillRenderer, Evaluate(_displayed));
 
-            GameObject fill = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            fill.name = "Fill";
-            fill.transform.SetParent(root.transform, false);
-            fill.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            fill.transform.localScale = new Vector3(_width, _height, 1f);
-            fill.GetComponent<Renderer>().material.color = _fullColor;
-            Object.DestroyImmediate(fill.GetComponent<Collider>());
+            bool full = _target >= 0.999f && _displayed >= 0.999f;
+            SetVisible(_health.IsAlive && !(_hideWhenFull && full));
 
-            _fill = fill.GetComponent<Renderer>();
-
-            Refresh(_health.CurrentHealth, _health.MaxHealth);
+            if (_visible && _camera != null)
+            {
+                _root.rotation = _camera.transform.rotation;
+            }
         }
 
         private void SetVisible(bool visible)
         {
-            if (_isVisible == visible)
+            if (_visible == visible || _root == null)
             {
                 return;
             }
 
-            _isVisible = visible;
-            if (_barRoot != null)
-            {
-                _barRoot.gameObject.SetActive(visible);
-            }
+            _visible = visible;
+            _root.gameObject.SetActive(visible);
+        }
+
+        private Color Evaluate(float pct)
+        {
+            return pct >= 0.5f
+                ? Color.Lerp(_midColor, _highColor, (pct - 0.5f) * 2f)
+                : Color.Lerp(_lowColor, _midColor, pct * 2f);
         }
     }
 }
