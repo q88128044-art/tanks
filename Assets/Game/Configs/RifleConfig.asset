@@ -16,15 +16,15 @@ MonoBehaviour:
   _projectilePrefab: {fileID: 5230415882688790211, guid: 3d073b724b32b6f42ba26a151533ab2e, type: 3}
   _projectileScale: 1
   _projectileSpeed: 32
-  _tint: {r: 0.95, g: 0.85, b: 0.25, a: 1}
+  _tint: {r: 1, g: 0.88, b: 0.3, a: 1}
   _damage: 10
   _cooldown: 0.35
   _projectileLifetime: 2.5
   _maxActiveProjectiles: 0
-  _muzzleFlashSize: 0.4
+  _muzzleFlashSize: 0.35
   _muzzleFlashDuration: 0.08
-  _muzzleFlashColor: {r: 1, g: 0.7, b: 0.2, a: 1}
-  _trailDuration: 0.2
+  _muzzleFlashColor: {r: 1, g: 0.8, b: 0.35, a: 1}
+  _trailDuration: 0.12
   _impactSize: 0.25
   _impactDuration: 0.12
   _impactBaseFrequency: 400
@@ -33,4 +33,4 @@ MonoBehaviour:
   _explosionSize: 1.5
   _explosionDuration: 0.3
   _explosionVolume: 0.8
-  _cameraRecoil: 1.5
+  _cameraRecoil: 1.2

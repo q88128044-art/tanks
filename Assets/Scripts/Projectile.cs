@@ -3,221 +3,260 @@ using UnityEngine;
 
 namespace Tanks
 {
+    /// <summary>
+    /// Shell fired by a WeaponController. Every stat (speed, lifetime, damage,
+    /// scale, tint, trail) comes from the WeaponConfig. Movement is swept with a
+    /// sphere cast each frame, so fast shells never tunnel through thin objects,
+    /// and the owner's colliders are always ignored. Damage is applied through
+    /// IDamageable.
+    /// </summary>
     public class Projectile : MonoBehaviour
     {
-        private static readonly Dictionary<int, int> ActiveByOwner = new Dictionary<int, int>();
+        private static readonly Dictionary<Transform, int> ActiveByOwner = new Dictionary<Transform, int>();
         private static readonly List<Projectile> Active = new List<Projectile>();
+        private static readonly RaycastHit[] HitBuffer = new RaycastHit[16];
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         [SerializeField] private float _speed = 28f;
         [SerializeField] private float _lifetime = 3f;
         [SerializeField] private float _damage = 10f;
+        [SerializeField] private float _radius = 0.1f;
 
-        private bool _hasHit;
-        private Transform _owner;
-        private Collider _collider;
-        private Rigidbody _rigidbody;
         private WeaponConfig _config;
+        private Transform _owner;
+        private Transform _ownerKey;
+        private bool _registered;
+        private bool _done;
         private float _dieAt;
+        private int _mask;
 
         public float Damage => _damage;
         public Transform Owner => _owner;
-        public float Speed => _rigidbody != null ? _rigidbody.linearVelocity.magnitude : 0f;
+        public WeaponConfig Config => _config;
+        public static int TotalActive => Active.Count;
 
         public static int CountActiveFor(Transform owner)
         {
-            return owner != null && ActiveByOwner.TryGetValue(owner.GetInstanceID(), out int count) ? count : 0;
+            return owner != null && ActiveByOwner.TryGetValue(owner, out int count) ? count : 0;
         }
 
-        public static int TotalActive => Active.Count;
-
-        public void Launch(WeaponConfig config, Transform owner, Vector3 direction)
+        public void Launch(WeaponConfig config, Transform owner, Vector3 direction, float damageMultiplier = 1f)
         {
+            _config = config;
+            _owner = owner;
             _speed = config.ProjectileSpeed;
             _lifetime = config.ProjectileLifetime;
-            _damage = config.Damage;
-            _owner = owner;
-            _config = config;
+            _damage = config.Damage * Mathf.Max(0f, damageMultiplier);
+            _radius = 0.08f * config.ProjectileScale;
+            _dieAt = Time.time + _lifetime;
 
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                direction = transform.forward;
+            }
+
+            transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
             transform.localScale = Vector3.one * config.ProjectileScale;
-            transform.SetPositionAndRotation(transform.position, Quaternion.LookRotation(direction.normalized, Vector3.up));
 
-            Renderer[] renderers = GetComponentsInChildren<Renderer>();
-            foreach (Renderer item in renderers)
+            int projectileLayer = LayerMask.NameToLayer("Projectile");
+            _mask = Physics.DefaultRaycastLayers;
+            if (projectileLayer >= 0)
             {
-                item.material.color = config.Tint;
+                _mask &= ~(1 << projectileLayer);
             }
 
-            TrailRenderer trail = GetComponent<TrailRenderer>();
-            if (trail != null)
+            // Collision is handled by the sweep below; the prefab collider would
+            // only make shells trigger on each other.
+            foreach (Collider own in GetComponentsInChildren<Collider>())
             {
-                trail.time = config.TrailDuration;
-                trail.startColor = config.Tint;
-                trail.endColor = new Color(config.Tint.r, config.Tint.g, config.Tint.b, 0f);
-                trail.startWidth = config.ProjectileScale * 0.3f;
-                trail.endWidth = 0f;
+                own.enabled = false;
             }
 
-            IgnoreOwnerColliders(owner);
+            ApplyLook(config);
             Register();
         }
 
-        private void Awake()
+        private void ApplyLook(WeaponConfig config)
         {
-            Collider[] colliders = GetComponents<Collider>();
-            _collider = colliders.Length > 0 ? colliders[0] : gameObject.AddComponent<SphereCollider>();
-
-            for (int i = 1; i < colliders.Length; i++)
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            foreach (MeshRenderer item in GetComponentsInChildren<MeshRenderer>())
             {
-                Destroy(colliders[i]);
+                item.GetPropertyBlock(block);
+                block.SetColor(BaseColorId, config.Tint);
+                item.SetPropertyBlock(block);
             }
 
-            _collider.isTrigger = true;
-
-            Rigidbody body = GetComponent<Rigidbody>();
-            if (body == null)
+            TrailRenderer trail = GetComponent<TrailRenderer>();
+            if (trail == null)
             {
-                body = gameObject.AddComponent<Rigidbody>();
+                trail = gameObject.AddComponent<TrailRenderer>();
             }
 
-            _rigidbody = body;
-            body.isKinematic = true;
-            body.useGravity = false;
-            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            if (VFXSystem.Instance != null && VFXSystem.Instance.AdditiveMaterial != null)
+            {
+                trail.sharedMaterial = VFXSystem.Instance.AdditiveMaterial;
+            }
+
+            Color head = Color.Lerp(config.Tint, Color.white, 0.35f);
+            trail.time = Mathf.Max(0.05f, config.TrailDuration);
+            trail.startColor = head;
+            trail.endColor = new Color(config.Tint.r, config.Tint.g, config.Tint.b, 0f);
+            trail.startWidth = 0.14f * config.ProjectileScale;
+            trail.endWidth = 0f;
+            trail.minVertexDistance = 0.1f;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            trail.Clear();
+            trail.emitting = true;
         }
 
         private void Update()
         {
-            transform.position += transform.forward * _speed * Time.deltaTime;
+            if (_done)
+            {
+                return;
+            }
+
+            if (_config == null)
+            {
+                // Spawned without Launch (e.g. dragged into the scene): just expire.
+                if (Time.time >= _dieAt + _lifetime)
+                {
+                    Destroy(gameObject);
+                }
+
+                return;
+            }
+
+            float step = _speed * Time.deltaTime;
+            Vector3 origin = transform.position;
+            Vector3 forward = transform.forward;
+
+            int count = Physics.SphereCastNonAlloc(origin, _radius, forward, HitBuffer, step, _mask, QueryTriggerInteraction.Ignore);
+            int best = -1;
+            float bestDistance = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit hit = HitBuffer[i];
+                if (hit.collider == null || (_owner != null && hit.collider.transform.IsChildOf(_owner)))
+                {
+                    continue;
+                }
+
+                if (hit.distance < bestDistance)
+                {
+                    bestDistance = hit.distance;
+                    best = i;
+                }
+            }
+
+            if (best >= 0)
+            {
+                RaycastHit hit = HitBuffer[best];
+                bool overlapping = hit.distance <= 0f && hit.point == Vector3.zero;
+                Vector3 point = overlapping ? origin : hit.point;
+                Vector3 normal = overlapping ? -forward : hit.normal;
+                OnHit(hit.collider, point, normal);
+                return;
+            }
+
+            transform.position = origin + forward * step;
 
             if (Time.time >= _dieAt)
             {
-                Expire();
+                Destroy(gameObject);
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void OnHit(Collider other, Vector3 point, Vector3 normal)
         {
-            Debug.Log($"[Projectile] {name} triggered by {other.name} owner={( _owner == null ? "null" : _owner.name )}");
-
-            // A trigger sphere can report the Hull and the TurretBody of the same
-            // tank in one frame; without this guard the hit is applied twice.
-            if (_hasHit)
-            {
-                return;
-            }
-
-            if (_owner != null && other.transform.IsChildOf(_owner))
-            {
-                Debug.Log($"[Projectile] {name} ignored own collider {other.name}");
-                return;
-            }
+            _done = true;
+            transform.position = point;
 
             IDamageable damageable = other.GetComponentInParent<IDamageable>();
-            if (damageable != null)
+            if (damageable != null && damageable.IsAlive && !IsFriendly(damageable))
             {
-                damageable.TakeDamage(_damage, transform);
-                _hasHit = true;
+                damageable.TakeDamage(_damage, _owner != null ? _owner : transform);
             }
 
-            PlayImpactVFX(other);
+            SurfaceType surface = ImpactSurface.Resolve(other);
 
-            Expire();
+            if (_config.IsHeavy)
+            {
+                if (VFXSystem.Instance != null)
+                {
+                    VFXSystem.Instance.PlayExplosion(point + normal * 0.2f, _config.ExplosionSize, true);
+                }
+
+                if (AudioSystem.Instance != null)
+                {
+                    AudioSystem.Instance.PlayExplosion(point, true, _config.ExplosionVolume);
+                }
+            }
+            else
+            {
+                if (VFXSystem.Instance != null)
+                {
+                    VFXSystem.Instance.PlayImpact(point, normal, surface, _config.ImpactSize);
+                }
+
+                if (AudioSystem.Instance != null)
+                {
+                    AudioSystem.Instance.PlayImpact(point, surface, _config.ImpactVolume);
+                }
+            }
+
+            Destroy(gameObject);
         }
 
-        private void PlayImpactVFX(Collider other)
+        /// <summary>Enemies do not damage each other.</summary>
+        private bool IsFriendly(IDamageable damageable)
         {
-            Vector3 hitPoint = transform.position;
-            Quaternion hitRotation = transform.rotation;
-            Color tint = _config != null ? _config.Tint : Color.white;
-            float randomPitch = Random.Range(0.95f, 1.05f);
-
-            if (VFXSystem.Instance != null)
-            {
-                VFXSystem.Instance.PlayImpact(hitPoint, hitRotation,
-                    _config != null ? _config.ImpactSize : 0.3f,
-                    _config != null ? _config.ImpactDuration : 0.15f,
-                    tint);
-            }
-
-            if (AudioSystem.Instance != null && _config != null)
-            {
-                AudioSystem.Instance.PlayImpact(hitPoint,
-                    _config.ImpactBaseFrequency,
-                    _config.ImpactDuration,
-                    _config.ImpactVolume,
-                    randomPitch);
-            }
-        }
-
-        private void IgnoreOwnerColliders(Transform owner)
-        {
-            if (owner == null || _collider == null)
-            {
-                return;
-            }
-
-            Collider[] ownerColliders = owner.GetComponentsInChildren<Collider>();
-            foreach (Collider ownerCollider in ownerColliders)
-            {
-                Physics.IgnoreCollision(_collider, ownerCollider, true);
-            }
+            Component target = damageable as Component;
+            return _owner != null && target != null && _owner.CompareTag("Enemy") && target.CompareTag("Enemy");
         }
 
         private void Register()
         {
-            _dieAt = Time.time + _lifetime;
+            if (_registered)
+            {
+                return;
+            }
 
+            _registered = true;
             Active.Add(this);
-
             if (_owner != null)
             {
-                int id = _owner.GetInstanceID();
-                ActiveByOwner.TryGetValue(id, out int count);
-                ActiveByOwner[id] = count + 1;
+                _ownerKey = _owner;
+                ActiveByOwner.TryGetValue(_ownerKey, out int count);
+                ActiveByOwner[_ownerKey] = count + 1;
             }
         }
 
         private void OnDestroy()
         {
-            Active.Remove(this);
-
-            if (_owner == null)
+            if (!_registered)
             {
                 return;
             }
 
-            int id = _owner.GetInstanceID();
-            if (ActiveByOwner.TryGetValue(id, out int count))
+            Active.Remove(this);
+            if (ReferenceEquals(_ownerKey, null))
+            {
+                return;
+            }
+
+            if (ActiveByOwner.TryGetValue(_ownerKey, out int count))
             {
                 if (count <= 1)
                 {
-                    ActiveByOwner.Remove(id);
+                    ActiveByOwner.Remove(_ownerKey);
                 }
                 else
                 {
-                    ActiveByOwner[id] = count - 1;
+                    ActiveByOwner[_ownerKey] = count - 1;
                 }
             }
-        }
-
-        private void Expire()
-        {
-            // Destruction explosion on impact (heavy weapons / cannon already explode in WeaponController,
-            // but every projectile leaves a small spark burst for readability).
-            if (_config != null && _config.IsHeavy)
-            {
-                if (VFXSystem.Instance != null)
-                {
-                    VFXSystem.Instance.PlayExplosion(transform.position, _config.ExplosionSize * 0.5f,
-                        _config.ExplosionDuration * 0.6f, _config.Tint);
-                }
-                if (AudioSystem.Instance != null)
-                {
-                    AudioSystem.Instance.PlayExplosion(transform.position, _config.ExplosionVolume * 0.5f, 1f);
-                }
-            }
-
-            Destroy(gameObject);
         }
     }
 }
