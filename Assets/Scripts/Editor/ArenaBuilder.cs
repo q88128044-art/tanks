@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+#pragma warning disable CS0618 // NavigationStatic flags are kept for older AI Navigation setups
+using System.Collections.Generic;
 using Tanks;
 using Unity.AI.Navigation;
 using UnityEditor;
@@ -116,6 +117,7 @@ namespace Tanks.EditorTools
             Transform[] waypoints = CreateAiPatrolRoute();
             AssignAiRoute(enemy, waypoints);
             BuildNavMesh();
+            ArenaPolish.ApplyAfterBuild(true);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -148,6 +150,7 @@ namespace Tanks.EditorTools
             CreatePlayerHealthHud();
             CreateTargets(set);
             BuildNavMesh();
+            ArenaPolish.ApplyAfterBuild(false);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, RangeScenePath);
@@ -799,7 +802,7 @@ namespace Tanks.EditorTools
             label.fontSize = 26;
             label.alignment = TextAnchor.MiddleLeft;
             label.color = Color.white;
-            label.text = "РўР°РЅРє Р·СѓРїРёРЅРёРІСЃСЏ";
+            label.text = "Танк зупинився";
 
             TankMover mover = Object.FindAnyObjectByType<TankMover>();
             if (mover != null)
@@ -990,15 +993,21 @@ namespace Tanks.EditorTools
             v.rounded.Override(false);
         }
 
-private static void BuildNavMesh()
+        private static void BuildNavMesh()
         {
-            // Legacy NavMesh (Unity.AI) — the NavMeshAgent on EnemyTank uses
-            // this API. Only NavigationStatic geometry contributes; the tanks
-            // live on the Player/Enemy layers and are excluded so the surface
-            // stays at ground level instead of being built on top of them.
-            NavMeshSettings settings = NavMeshAgentSettings.LoadFromSettings(NavMeshAgentSettings.defaultAgentTypeID);
-            NavMeshData data = UnityEngine.AI.NavMesh.Bake(settings, new Vector3(200f, 20f, 200f));
-            UnityEngine.AI.NavMesh.AddNavMeshData(data);
+            // Bake through a NavMeshSurface (AI Navigation package). The tank and
+            // projectile layers are excluded so the surface stays at ground
+            // level instead of being built on top of the vehicles.
+            NavMeshSurface surface = Object.FindAnyObjectByType<NavMeshSurface>();
+            if (surface == null)
+            {
+                surface = new GameObject("NavMeshSurface").AddComponent<NavMeshSurface>();
+            }
+
+            surface.collectObjects = CollectObjects.All;
+            surface.useGeometry = UnityEngine.AI.NavMeshCollectGeometry.PhysicsColliders;
+            surface.layerMask = LevelNavigationMask;
+            surface.BuildNavMesh();
         }
 
         private static GameObject CreateInstance(GameObject prefab, Vector3 position, Quaternion rotation, string name)
