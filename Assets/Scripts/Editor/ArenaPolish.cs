@@ -103,7 +103,7 @@ namespace Tanks.EditorTools
             SetupLightingAndAtmosphere();
         }
 
-        private static void SetupCamera()
+        public static void SetupCamera()
         {
             Camera cam = Camera.main;
             if (cam == null) return;
@@ -118,7 +118,7 @@ namespace Tanks.EditorTools
             cam.farClipPlane = 200f;
         }
 
-        private static void SetupHud()
+        public static void SetupHud()
         {
             PlayerHealthUI hud = Object.FindAnyObjectByType<PlayerHealthUI>();
             if (hud != null)
@@ -157,7 +157,7 @@ namespace Tanks.EditorTools
             }
         }
 
-        private static void SetupLightingAndAtmosphere()
+        public static void SetupLightingAndAtmosphere()
         {
             Light sun = null;
             foreach (Light l in Object.FindObjectsByType<Light>())
@@ -276,7 +276,7 @@ namespace Tanks.EditorTools
             CreateRepairKit(root.transform, "RepairKit_East", new Vector3(21f, 0.5f, -12f));
         }
 
-        private static void CreateRepairKit(Transform parent, string name, Vector3 position)
+        public static void CreateRepairKit(Transform parent, string name, Vector3 position)
         {
             Material kit = AssetDatabase.LoadAssetAtPath<Material>(ArenaPolishAssets.MaterialsFolder + "/RepairKit.mat");
             Material cross = AssetDatabase.LoadAssetAtPath<Material>(ArenaPolishAssets.MaterialsFolder + "/RepairCross.mat");
@@ -523,7 +523,7 @@ namespace Tanks.EditorTools
 
         #region NavMesh
 
-        private static void BakeNavMesh()
+        public static void BakeNavMesh()
         {
             NavMeshSurface surface = Object.FindAnyObjectByType<NavMeshSurface>();
             if (surface == null)

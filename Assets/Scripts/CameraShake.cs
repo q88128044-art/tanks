@@ -21,6 +21,8 @@ namespace Tanks
         private Vector3 _appliedOffset;
         private Quaternion _appliedRotation = Quaternion.identity;
         private float _seed;
+        private Vector3 _lastPosition;
+        private Quaternion _lastRotation;
 
         public float Trauma => _trauma;
 
@@ -64,13 +66,24 @@ namespace Tanks
 
         private void LateUpdate()
         {
-            transform.position -= _appliedOffset;
-            transform.rotation = transform.rotation * Quaternion.Inverse(_appliedRotation);
+            // Remove last frame's shake only if no other script repositioned the camera since.
+            if (transform.position == _lastPosition)
+            {
+                transform.position -= _appliedOffset;
+            }
+
+            if (transform.rotation == _lastRotation)
+            {
+                transform.rotation = transform.rotation * Quaternion.Inverse(_appliedRotation);
+            }
+
             _appliedOffset = Vector3.zero;
             _appliedRotation = Quaternion.identity;
 
             if (_trauma <= 0f)
             {
+                _lastPosition = transform.position;
+                _lastRotation = transform.rotation;
                 return;
             }
 
@@ -84,6 +97,8 @@ namespace Tanks
             _appliedRotation = Quaternion.Euler(0f, 0f, r * _maxAngle * strength);
             transform.position += _appliedOffset;
             transform.rotation = transform.rotation * _appliedRotation;
+            _lastPosition = transform.position;
+            _lastRotation = transform.rotation;
 
             _trauma = Mathf.Max(0f, _trauma - _decay * Time.deltaTime);
         }
