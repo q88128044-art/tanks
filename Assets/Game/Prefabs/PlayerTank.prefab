@@ -284,6 +284,8 @@ GameObject:
   - component: {fileID: 291489135230282794}
   - component: {fileID: 2440616444078350613}
   - component: {fileID: 5659306248551786699}
+  - component: {fileID: 8354540745977024327}
+  - component: {fileID: 6800967067081860651}
   m_Layer: 10
   m_Name: PlayerTank
   m_TagString: Player
@@ -343,6 +345,9 @@ MonoBehaviour:
   _regenDelay: 5
   _hitFlashColor: {r: 1, g: 0.25, b: 0.18, a: 1}
   _hitFlashDuration: 0.15
+  _blinkInterval: 0.06
+  _wreckDarkness: 0.25
+  _wreckLifetime: 12
 --- !u!114 &5839831473358421919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,15 +360,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa523a93532573a478b23d2c93484271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tanks.WorldSpaceHealthBar
-  _barRoot: {fileID: 0}
-  _fill: {fileID: 0}
   _width: 1.3
   _height: 0.2
   _verticalOffset: 1.7
-  _hideWhenFullDelay: 1
-  _fullColor: {r: 0.15, g: 0.75, b: 0.2, a: 1}
+  _hideWhenFull: 1
+  _showOnPlayer: 0
+  _drainSpeed: 0.8
+  _highColor: {r: 0.2, g: 0.8, b: 0.25, a: 1}
+  _midColor: {r: 0.95, g: 0.8, b: 0.15, a: 1}
   _lowColor: {r: 0.85, g: 0.2, b: 0.15, a: 1}
-  _flashColor: {r: 1, g: 1, b: 1, a: 1}
+  _backgroundColor: {r: 0.05, g: 0.05, b: 0.05, a: 1}
 --- !u!54 &291489135230282794
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -373,8 +379,8 @@ Rigidbody:
   m_GameObject: {fileID: 1348021605376100409}
   serializedVersion: 5
   m_Mass: 8
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_LinearDamping: 0.5
+  m_AngularDamping: 5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -422,6 +428,43 @@ MonoBehaviour:
   _turnSpeed: 100
   _reverseSpeedFactor: 0.6
   _acceleration: 14
+  _braking: 18
+  _startMessage: "\u0422\u0430\u043D\u043A \u043F\u043E\u0447\u0430\u0432 \u0440\u0443\u0445"
+  _stopMessage: "\u0422\u0430\u043D\u043A \u0437\u0443\u043F\u0438\u043D\u0438\u0432\u0441\u044F"
+--- !u!114 &8354540745977024327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348021605376100409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f183d60c937efca46a60c8f4167ae27e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.TankConfigApplier
+  _config: {fileID: 11400000, guid: b359d29494ddf24408eebedc3997a12a, type: 2}
+--- !u!114 &6800967067081860651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348021605376100409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81ed4a813aaffd343a9cd01bdce53d01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.EngineLoop
+  _idleVolume: 0.12
+  _fullVolume: 0.45
+  _idlePitch: 0.7
+  _fullPitch: 1.4
+  _response: 3
+  _spatialBlend: 0.6
+  _exhaustSmoke: 1
+  _idleSmokeRate: 3
+  _fullSmokeRate: 22
 --- !u!1 &1770059370253123696
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,9 +730,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5903eb7a4deabd049b8f2b4cfeebda88, type: 2}
   - {fileID: 11400000, guid: 6574061d733ec2a41b72fc12e09d1af3, type: 2}
   _muzzle: {fileID: 4747099031471712556}
-  _camera: {fileID: 0}
   _startIndex: 0
   _isAIWeapon: 0
+  _damageMultiplier: 1
 --- !u!1 &1980072370868603318
 GameObject:
   m_ObjectHideFlags: 0
