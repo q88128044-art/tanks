@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4462879b1765a084392b197aacf742f1, type: 3}
+  m_Name: EnemyLightConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Tanks.TankConfig
+  _displayName: Light Scout
+  _maxHealth: 90
+  _damageMultiplier: 0.7
+  _moveSpeed: 4.5
+  _turnSpeed: 140
+  _reverseSpeedFactor: 0.6
+  _acceleration: 10
+  _weapons:
+  - {fileID: 11400000, guid: cb1c8b1aa6b881146897f30f5514322c, type: 2}
+  _chaseRange: 22
+  _attackRange: 14
+  _shootAngle: 8
+  _shootCooldown: 1.1
+  _turretTurnSpeed: 160
+  _loseTargetTime: 3
+  _patrolWait: {x: 0.5, y: 2}
